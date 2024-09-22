@@ -83,3 +83,12 @@ void StevesAwesomeSamplePlayer::pitchShift(float _semitones)
 {
     sampleSpeed = pow(2, _semitones / 12.0);
 }
+
+uint32_t StevesAwesomeSamplePlayer::lengthMillis(void)
+{
+    return (uint32_t)(length  / (float)44100 * 1000.0);
+}
+
+uint32_t StevesAwesomeSamplePlayer::positionMillis(void) {
+    return (uint32_t)(currentSample  / (float)44100 * 1000.0);
+}
