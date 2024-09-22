@@ -39,35 +39,41 @@ int16_t StevesAwesomeSamplePlayer::getNextSample()
     //if(currentSample >= length) currentSample = 0;
     
     // the new way with adjustable start and end
-    if(currentSample >= length * endPercent) currentSample = length * startPercent;
+    if(currentSample >= length * endPercent) {
 
-    cs = sampleArray[(int)currentSample];
+        // if looping start over
+        if(looping) {
+            currentSample = length * startPercent;
+
+        // if not, stop playing
+        } else {
+            playing = false;
+            return 0;
+        }
+    }
+
+    long sampleIndex = currentSample / 2;
+    int sample32BitContainer = sampleArray[(int)sampleIndex];
+
+    if(sampleIndex % 2 == 0) cs = (int16_t)(sample32BitContainer & 65535);
+    else cs = (int16_t)(sample32BitContainer >> 16);
 
     __enable_irq();
 
     return cs;
 }
 
-void StevesAwesomeSamplePlayer::setSampleArray(volatile int16_t* _sampleArray)
+void StevesAwesomeSamplePlayer::setSampleArray(const unsigned int* _sampleArray)
 {
     __disable_irq();
     sampleArray = _sampleArray;
+    length = (*_sampleArray & 0xFFFFFF);
     __enable_irq();
 }
 
- void StevesAwesomeSamplePlayer::setSamplePlaybackLength(volatile double _length)
+ bool StevesAwesomeSamplePlayer::isPlaying() 
  {
-    __disable_irq();
-    length = _length;
-    __enable_irq();
- }
-
- void StevesAwesomeSamplePlayer::setSampleSpeed(float _sampleSpeed)
- {
-    // Serial.println(_sampleSpeed);
-    __disable_irq();
-    sampleSpeed = _sampleSpeed;
-    __enable_irq();
+    return playing;
  }
  
 void StevesAwesomeSamplePlayer::startPlaying()
@@ -79,4 +85,9 @@ void StevesAwesomeSamplePlayer::startPlaying()
 void StevesAwesomeSamplePlayer::stop()
 {
     playing = false;
+}
+
+void StevesAwesomeSamplePlayer::pitchShift(float _semitones)
+{
+    sampleSpeed = pow(2, _semitones / 12.0);
 }

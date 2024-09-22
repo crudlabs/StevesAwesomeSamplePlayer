@@ -1,6 +1,8 @@
 #ifndef STEVES_AWESOME_SAMPLE_PLAYER
 #define STEVES_AWESOME_SAMPLE_PLAYER
 
+// this library currently only works with WAVS converted with wav2sketch using 16 bit PCB encoding and 44100 sample rate !
+
 #include "Arduino.h"
 #include "AudioStream.h"
 
@@ -21,23 +23,26 @@ class StevesAwesomeSamplePlayer : public AudioStream {
           currentSample = 0;
           startPercent = 0.0;
           endPercent = 1.0;
+          looping = false;
+          sampleSpeed = 1;
     }
 
     // inhereted update function 
     virtual void update(void);
 
-    void setSampleArray(volatile int16_t* _sampleArray);
-    void setSamplePlaybackLength(volatile double _length);
+    void setSampleArray(const unsigned int* _sampleArray);
     void startPlaying();
     void stop();
-    void setSampleSpeed(float _sampleSpeed);
+    void pitchShift(float _semitones);
     volatile double startPercent;
     volatile double endPercent;
+    bool isPlaying();
+    bool looping;
 
     private:
     int16_t getNextSample();    
     volatile float sampleSpeed;
-    volatile int16_t* sampleArray;
+    const unsigned int* sampleArray;
     volatile double length;
     volatile double currentSample;
     bool playing;
