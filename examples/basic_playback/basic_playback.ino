@@ -15,10 +15,10 @@ AudioConnection patchCord2(samplePlayer, 0, i2s1, 1);
 AudioControlSGTL5000 sgtl5000_1;  //xy=351.4500198364258,269.7000198364258
 // GUItool: end automatically generated code
 
-int samplePitch = 0;
+int samplePitch = -12;
 
 void setup() {
-  
+
   // audio memory
   AudioMemory(12);
 
@@ -29,7 +29,9 @@ void setup() {
   // init sample player and start playing
   samplePlayer.setSampleArray(AudioSampleCowbell);
   samplePlayer.looping = false;
-  samplePlayer.pitchShift(-12);
+  samplePlayer.pitchShift(samplePitch);
+  samplePlayer.startPercent = 0.25;
+  samplePlayer.endPercent = 0.75;
   samplePlayer.startPlaying();
 }
 
