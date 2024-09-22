@@ -17,14 +17,9 @@ void StevesAwesomeSamplePlayer::update()
   release(block);
 }
 
-void record()
-{
-
-}
-
-void play()
-{
-
+void StevesAwesomeSamplePlayer::play(const unsigned int* _sampleArray) {
+    setSampleArray(_sampleArray);
+    startPlaying();
 }
 
 int16_t StevesAwesomeSamplePlayer::getNextSample()
@@ -34,10 +29,7 @@ int16_t StevesAwesomeSamplePlayer::getNextSample()
     __disable_irq();
 
     currentSample += sampleSpeed;
-    
-    // the old way without adustable start and end    
-    //if(currentSample >= length) currentSample = 0;
-    
+        
     // the new way with adjustable start and end
     if(currentSample >= length * endPercent) {
 

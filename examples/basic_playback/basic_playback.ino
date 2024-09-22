@@ -27,12 +27,9 @@ void setup() {
   sgtl5000_1.volume(1.0);
 
   // init sample player and start playing
-  samplePlayer.setSampleArray(AudioSampleCowbell);
   samplePlayer.looping = false;
   samplePlayer.pitchShift(samplePitch);
-  samplePlayer.startPercent = 0.25;
-  samplePlayer.endPercent = 0.75;
-  samplePlayer.startPlaying();
+  samplePlayer.play(AudioSampleCowbell);
 }
 
 void loop() {
@@ -49,5 +46,5 @@ void loop() {
   samplePlayer.pitchShift(samplePitch);
 
   // and start playing again
-  samplePlayer.startPlaying();
+  samplePlayer.play(AudioSampleCowbell);
 }

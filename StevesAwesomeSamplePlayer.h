@@ -32,6 +32,7 @@ class StevesAwesomeSamplePlayer : public AudioStream {
 
     void setSampleArray(const unsigned int* _sampleArray);
     void startPlaying();
+    void play(const unsigned int* _sampleArray);
     void stop();
     void pitchShift(float _semitones);
     volatile double startPercent;
