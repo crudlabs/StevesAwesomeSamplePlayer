@@ -26,6 +26,7 @@ class StevesAwesomeSamplePlayer : public AudioStream {
           looping = false;
           sampleSpeed = 1;
           length = 0;
+          backwards = false;
     }
 
     // inhereted update function 
@@ -40,6 +41,7 @@ class StevesAwesomeSamplePlayer : public AudioStream {
     volatile double endPercent;
     bool isPlaying();
     bool looping;
+    bool backwards;
     uint32_t positionMillis(void);
 	uint32_t lengthMillis(void);
 

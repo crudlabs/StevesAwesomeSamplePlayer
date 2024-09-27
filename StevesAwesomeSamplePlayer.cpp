@@ -28,15 +28,33 @@ int16_t StevesAwesomeSamplePlayer::getNextSample()
 
     __disable_irq();
 
-    currentSample += sampleSpeed;
+    if(backwards == true) {
+        currentSample -= sampleSpeed;
+    } else {
+        currentSample += sampleSpeed;
+    }
         
-    // the new way with adjustable start and end
-    if(currentSample >= length * endPercent) {
+    // if forwards
+    if(backwards == false and currentSample >= length * endPercent) {
 
         // if looping start over
         if(looping) {
             currentSample = length * startPercent;
 
+        // if not, stop playing
+        } else {
+            playing = false;
+            return 0;
+        }
+    }
+
+    // if backwards
+    if(backwards == true and currentSample < length * startPercent) {
+
+        // if looping start over
+        if(looping) {
+            currentSample = length * endPercent;
+        
         // if not, stop playing
         } else {
             playing = false;
@@ -71,7 +89,11 @@ void StevesAwesomeSamplePlayer::setSampleArray(const unsigned int* _sampleArray)
 void StevesAwesomeSamplePlayer::startPlaying()
 {
     playing = true;
-    currentSample = length * startPercent;
+    if(backwards == false) {
+        currentSample = length * startPercent;
+    } else {
+        currentSample = length * endPercent;
+    }
 }
 
 void StevesAwesomeSamplePlayer::stop()

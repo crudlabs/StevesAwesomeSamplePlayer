@@ -24,10 +24,11 @@ void setup() {
 
   // init audio shield
   sgtl5000_1.enable();
-  sgtl5000_1.volume(1.0);
+  sgtl5000_1.volume(0.8);
 
   // init sample player and start playing
   samplePlayer.looping = false;
+  samplePlayer.backwards = false;
   samplePlayer.pitchShift(samplePitch);
   samplePlayer.play(AudioSampleCowbell);
 }
@@ -39,8 +40,11 @@ void loop() {
   // then increment the pitch by one semitone
   samplePitch++;
 
-  // go back to the lowest pitch if we reach the highest
-  if (samplePitch > 12) samplePitch = -12;
+  // go back to the lowest pitch if we reach the highest, and reverse sample playback
+  if (samplePitch > 12) {
+    samplePitch = -12;
+    samplePlayer.backwards = !samplePlayer.backwards;
+  }
 
   // set the pitch
   samplePlayer.pitchShift(samplePitch);
@@ -48,3 +52,4 @@ void loop() {
   // and start playing again
   samplePlayer.play(AudioSampleCowbell);
 }
+
