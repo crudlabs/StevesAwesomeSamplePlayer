@@ -1,8 +1,13 @@
-A sample playback object for the Teensy Audio Library with a musically useful pitch shifting function which works with semitones on the chromatic scale. It also currently has two other useful features: looping, and playing back any segment of the full sample.
+A sample playback object for the Teensy Audio Library based on the built-in AudioPlayMemory, but with some added features:
 
-This object currently only supports sample arrays created with [wav2sketch](http://crudlabs.org/wav2sketch/) **using 16 bit PCM encoding and a 44100 sample rate**. Don't use other setting! They don't work yet.
+1) A musically useful pitch shifting function which works with semitones on the chromatic scale. 
+2) Easy looping simply by setting the public **looping** variable true.
+3) Playing back any segment of the sample.
 
-At the moment this is not a drop-in replacement for the AudioPlayMemory object, only because I was compelled to do things slightly differently. But it should be similarly simple and easy to use. The **basic_playback** example shows the correct way to use all the features.
+the only catch is that this object currently only supports sample arrays created with [wav2sketch](http://crudlabs.org/wav2sketch/) **using 16 bit PCM encoding and a 44100 sample rate**. Don't use other setting! They don't work yet. Adding each one is a whole thing.
+
+The **basic_playback** example in the examples folder shows the correct way to use all the features.
+**Pitch shifting**
 
 ```samplePlayer.pitchShift(-12);``` to pitch the sample down one octave.
 
@@ -10,12 +15,13 @@ At the moment this is not a drop-in replacement for the AudioPlayMemory object, 
 
 ```samplePlayer.pitchShift(0);``` to play the original un-pitched sample.
 
-It also has a looping parameter:
+The argument for pitchShift() is a float, not an int, so you can tune to a fraction of a cent if you'd like.
+
+**Looping**
 
 ```samplePlayer.looping = true;``` to loop the sample, until you tell it to stop.
 
-As well as a way to play only a segment of the sample:
-
+**Partial sample playback**
 ```
   samplePlayer.startPercent = 0.25;
   samplePlayer.endPercent = 0.75;
