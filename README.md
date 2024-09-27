@@ -27,3 +27,9 @@ The argument for pitchShift() is a float, not an int, so you can tune to a fract
   samplePlayer.endPercent = 0.75;
 ```
 to start 25% of the way in and stop at 75%.
+
+**Backwards playback**
+```
+  samplePlayer.backwards = true;
+```
+to make the sample play backwards.
