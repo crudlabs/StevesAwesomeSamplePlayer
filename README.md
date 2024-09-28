@@ -4,7 +4,7 @@ A sample playback object for the Teensy Audio Library based on the built-in Audi
 2) Easy looping simply by setting the public **looping** variable true.
 3) Playing back any segment of the sample.
 
-the only catch is that this object currently only supports sample arrays created with [wav2sketch](http://crudlabs.org/wav2sketch/) **using 16 bit PCM encoding and a 44100 sample rate**. Don't use other setting! They don't work yet. Adding each one is a whole thing.
+Like AudioPlayMemory, this object currently only supports sample arrays created with [wav2sketch](http://crudlabs.org/wav2sketch/).
 
 The **basic_playback** example in the examples folder shows the correct way to use all the features.
 **Pitch shifting**
