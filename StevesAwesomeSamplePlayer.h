@@ -27,6 +27,7 @@ class StevesAwesomeSamplePlayer : public AudioStream {
           sampleSpeed = 1;
           length = 0;
           backwards = false;
+          format = 0;
     }
 
     // inhereted update function 
@@ -52,6 +53,9 @@ class StevesAwesomeSamplePlayer : public AudioStream {
     volatile double length;
     volatile double currentSample;
     bool playing;
+    int format;
+    int stepsPerSample;
+    int currentStep;
     audio_block_t* block;
     audio_block_t* inputQueueArray[1];
 };

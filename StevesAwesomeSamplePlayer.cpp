@@ -6,6 +6,7 @@ void StevesAwesomeSamplePlayer::update()
     
     block = allocate();
     if (block == NULL) return;
+    if(format == 0) return;
 
     for (int i = 0; i < 128; i++) 
     {
@@ -28,18 +29,31 @@ int16_t StevesAwesomeSamplePlayer::getNextSample()
 
     __disable_irq();
 
-    if(backwards == true) {
-        currentSample -= sampleSpeed;
-    } else {
-        currentSample += sampleSpeed;
+    // increment the current sample step
+    currentStep++;
+
+    // if its time to go to the next sample, go for it
+    if(currentStep >= stepsPerSample) {
+
+        // reset sample step
+        currentStep = 0;
+
+        // go to the next sample
+        if(backwards == true) {
+            currentSample -= sampleSpeed;
+        } else {
+            currentSample += sampleSpeed;
+        }
     }
+
+
         
     // if forwards
     if(backwards == false and currentSample >= length * endPercent) {
 
         // if looping start over
         if(looping) {
-            currentSample = length * startPercent;
+            currentSample = length * startPercent + 1;
 
         // if not, stop playing
         } else {
@@ -77,7 +91,12 @@ void StevesAwesomeSamplePlayer::setSampleArray(const unsigned int* _sampleArray)
 {
     __disable_irq();
     sampleArray = _sampleArray;
-    length = (*_sampleArray & 0xFFFFFF);
+    length = *_sampleArray & 0xFFFFFF;
+    format = *_sampleArray  >> 24;
+    if(format == 0x81)      stepsPerSample = 1;     // 16 bit PCM, 44100 Hz
+    else if(format == 0x82) stepsPerSample = 2;     // 16 bits PCM, 22050 Hz
+    else if(format == 0x83) stepsPerSample = 4;     // 16 bit PCM, 11025 Hz
+    currentStep = 0;
     __enable_irq();
 }
 
