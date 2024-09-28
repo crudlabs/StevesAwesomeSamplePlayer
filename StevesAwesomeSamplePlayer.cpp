@@ -1,5 +1,9 @@
 #include "StevesAwesomeSamplePlayer.h"
 
+extern "C" {
+    extern const int16_t ulaw_decode_table[256];
+};
+
 void StevesAwesomeSamplePlayer::update()
 {    
     if(!playing) return;
@@ -8,7 +12,7 @@ void StevesAwesomeSamplePlayer::update()
     if (block == NULL) return;
     if(format == 0) return;
 
-    for (int i = 0; i < 128; i++) 
+    for (int i = 0; i < 128; i++)
     {
         if(playing) block->data[i] = getNextSample();
         else block->data[i] = 0;
@@ -25,7 +29,7 @@ void StevesAwesomeSamplePlayer::play(const unsigned int* _sampleArray) {
 
 int16_t StevesAwesomeSamplePlayer::getNextSample()
 {
-    double cs;
+    int16_t cs = 0;
 
     __disable_irq();
 
@@ -76,11 +80,25 @@ int16_t StevesAwesomeSamplePlayer::getNextSample()
         }
     }
 
-    long sampleIndex = currentSample / 2;
-    int sample32BitContainer = sampleArray[(int)sampleIndex];
+    long sampleIndex;
+    int sample32BitContainer;
 
-    if(sampleIndex % 2 == 0) cs = (int16_t)(sample32BitContainer & 65535);
-    else cs = (int16_t)(sample32BitContainer >> 16);
+    // if it's 16 bit PCB
+    if(format == 0x81 or format == 0x82 or format == 0x83) {
+
+        sampleIndex = currentSample / 2;    // two samples per int
+        sample32BitContainer = sampleArray[(int)sampleIndex];
+
+        if((int)currentSample % 2 == 0) cs = (int16_t)(sample32BitContainer & 65535);
+        else cs = (int16_t)(sample32BitContainer >> 16);
+    }
+    // if its u-law
+    else if(format == 0x01 or format == 0x02 or format == 0x03) {
+        sampleIndex = currentSample / 4;    // 4 samples per int
+        sample32BitContainer = sampleArray[(int)sampleIndex];
+        cs = (int16_t)((sample32BitContainer >> (((int)currentSample % 4) * 8)) & 255);   // get the 8 bit sample
+        cs = ulaw_decode_table[(int)cs];                                            // decode
+    }
 
     __enable_irq();
 
@@ -94,8 +112,11 @@ void StevesAwesomeSamplePlayer::setSampleArray(const unsigned int* _sampleArray)
     length = *_sampleArray & 0xFFFFFF;
     format = *_sampleArray  >> 24;
     if(format == 0x81)      stepsPerSample = 1;     // 16 bit PCM, 44100 Hz
-    else if(format == 0x82) stepsPerSample = 2;     // 16 bits PCM, 22050 Hz
+    else if(format == 0x82) stepsPerSample = 2;     // 16 bit PCM, 22050 Hz
     else if(format == 0x83) stepsPerSample = 4;     // 16 bit PCM, 11025 Hz
+    else if(format == 0x01) stepsPerSample = 1;     // 8 bit u-law, 44100 Hz
+    else if(format == 0x02) stepsPerSample = 2;     // 8 bit u-law, 22050 Hz
+    else if(format == 0x03) stepsPerSample = 4;     // 8 bit u-law, 11025 Hz
     currentStep = 0;
     __enable_irq();
 }
