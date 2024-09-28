@@ -34,6 +34,7 @@ void setup() {
 }
 
 void loop() {
+
   // sit and wait until the current sample finishes playing
   while (samplePlayer.isPlaying()) {}
 
@@ -41,9 +42,11 @@ void loop() {
   samplePitch++;
 
   // go back to the lowest pitch if we reach the highest, and reverse sample playback
-  if (samplePitch > 12) {
-    samplePitch = -12;
-    samplePlayer.backwards = !samplePlayer.backwards;
+  if (samplePitch > -24) {
+    // if(samplePlayer.backwards) samplePlayer.interpolate = !samplePlayer.interpolate;
+    samplePitch = -24;
+    samplePlayer.interpolate = !samplePlayer.interpolate;
+    // samplePlayer.backwards = !samplePlayer.backwards;
   }
 
   // set the pitch

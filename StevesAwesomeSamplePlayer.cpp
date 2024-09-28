@@ -29,7 +29,9 @@ void StevesAwesomeSamplePlayer::play(const unsigned int* _sampleArray) {
 
 int16_t StevesAwesomeSamplePlayer::getNextSample()
 {
-    int16_t cs = 0;
+    int16_t currentSample = 0;
+    int16_t nextSample = 0;
+    int16_t theSample = 0;
 
     __disable_irq();
 
@@ -44,20 +46,25 @@ int16_t StevesAwesomeSamplePlayer::getNextSample()
 
         // go to the next sample
         if(backwards == true) {
-            currentSample -= sampleSpeed;
+            currentSampleIndex -= sampleSpeed;
+            nextSampleIndex = currentSampleIndex - sampleSpeed;
         } else {
-            currentSample += sampleSpeed;
+            currentSampleIndex += sampleSpeed;
+            nextSampleIndex = currentSampleIndex + sampleSpeed;
         }
+
+        if(nextSampleIndex < length * startPercent) nextSampleIndex = length * endPercent;
+        if(nextSampleIndex >= length * endPercent) nextSampleIndex = length * startPercent;
     }
 
 
         
     // if forwards
-    if(backwards == false and currentSample >= length * endPercent) {
+    if(backwards == false and currentSampleIndex >= length * endPercent) {
 
         // if looping start over
         if(looping) {
-            currentSample = length * startPercent + 1;
+            currentSampleIndex = length * startPercent + 1;
 
         // if not, stop playing
         } else {
@@ -67,11 +74,11 @@ int16_t StevesAwesomeSamplePlayer::getNextSample()
     }
 
     // if backwards
-    if(backwards == true and currentSample < length * startPercent) {
+    if(backwards == true and currentSampleIndex < length * startPercent) {
 
         // if looping start over
         if(looping) {
-            currentSample = length * endPercent;
+            currentSampleIndex = length * endPercent;
         
         // if not, stop playing
         } else {
@@ -80,29 +87,51 @@ int16_t StevesAwesomeSamplePlayer::getNextSample()
         }
     }
 
-    long sampleIndex;
+    long sampleArrayIndex;
+    long nextSampleArrayIndex;
     int sample32BitContainer;
 
     // if it's 16 bit PCB
     if(format == 0x81 or format == 0x82 or format == 0x83) {
 
-        sampleIndex = currentSample / 2;    // two samples per int
-        sample32BitContainer = sampleArray[(int)sampleIndex];
+        // get the actual current sample
+        sampleArrayIndex = currentSampleIndex / 2;    // two samples per int
+        sample32BitContainer = sampleArray[(int)sampleArrayIndex];
 
-        if((int)currentSample % 2 == 0) cs = (int16_t)(sample32BitContainer & 65535);
-        else cs = (int16_t)(sample32BitContainer >> 16);
+        if((int)currentSampleIndex % 2 == 0) currentSample = (int16_t)(sample32BitContainer & 65535);
+        else currentSample = (int16_t)(sample32BitContainer >> 16);
+
+        // if we're not interpolating, return this actual sample from the array
+        if(interpolate == false or stepsPerSample == 1) return currentSample;
+
+        //otherwise do all this interpolation stuff
+
+        // get the next sample after this one
+        nextSampleArrayIndex = nextSampleIndex / 2;    // two samples per int
+        sample32BitContainer = sampleArray[(int)nextSampleArrayIndex];
+
+        if((int)nextSampleArrayIndex % 2 == 0) nextSample = (int16_t)(sample32BitContainer & 65535);
+        else nextSample = (int16_t)(sample32BitContainer >> 16);
+
+        if(stepsPerSample == 2) {
+            if(currentStep == 0) return currentSample;
+            else if(currentStep == 1) return (currentSample + nextSample) / 2;
+        } else if(stepsPerSample == 4) {
+            return currentSample + (nextSample - currentSample) * ((float)currentStep / 4);
+        }
+
     }
     // if its u-law
     else if(format == 0x01 or format == 0x02 or format == 0x03) {
-        sampleIndex = currentSample / 4;    // 4 samples per int
-        sample32BitContainer = sampleArray[(int)sampleIndex];
-        cs = (int16_t)((sample32BitContainer >> (((int)currentSample % 4) * 8)) & 255);   // get the 8 bit sample
-        cs = ulaw_decode_table[(int)cs];                                            // decode
+        sampleArrayIndex = currentSampleIndex / 4;    // 4 samples per int
+        sample32BitContainer = sampleArray[(int)sampleArrayIndex];
+        currentSample = (int16_t)((sample32BitContainer >> (((int)currentSampleIndex % 4) * 8)) & 255);   // get the 8 bit sample
+        currentSample = ulaw_decode_table[(int)currentSample];                                            // decode
     }
 
     __enable_irq();
 
-    return cs;
+    return currentSample;
 }
 
 void StevesAwesomeSamplePlayer::setSampleArray(const unsigned int* _sampleArray)
@@ -130,9 +159,9 @@ void StevesAwesomeSamplePlayer::startPlaying()
 {
     playing = true;
     if(backwards == false) {
-        currentSample = length * startPercent;
+        currentSampleIndex = length * startPercent;
     } else {
-        currentSample = length * endPercent;
+        currentSampleIndex = length * endPercent;
     }
 }
 
@@ -152,5 +181,5 @@ uint32_t StevesAwesomeSamplePlayer::lengthMillis(void)
 }
 
 uint32_t StevesAwesomeSamplePlayer::positionMillis(void) {
-    return (uint32_t)(currentSample  / (float)44100 * 1000.0);
+    return (uint32_t)(currentSampleIndex  / (float)44100 * 1000.0);
 }

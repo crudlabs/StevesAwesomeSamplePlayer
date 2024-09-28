@@ -20,7 +20,8 @@ class StevesAwesomeSamplePlayer : public AudioStream {
     // (note for later: in theory I shouldn't need the inputQueueArray and the args should be (0, NULL), but this works fine so I'm leaving it for now
     StevesAwesomeSamplePlayer() : AudioStream(1, inputQueueArray) {
           playing = false;
-          currentSample = 0;
+          currentSampleIndex = 0;
+          nextSampleIndex = 0;
           startPercent = 0.0;
           endPercent = 1.0;
           looping = false;
@@ -28,6 +29,7 @@ class StevesAwesomeSamplePlayer : public AudioStream {
           length = 0;
           backwards = false;
           format = 0;
+          interpolate = false;
     }
 
     // inhereted update function 
@@ -43,6 +45,7 @@ class StevesAwesomeSamplePlayer : public AudioStream {
     bool isPlaying();
     bool looping;
     bool backwards;
+    bool interpolate;
     uint32_t positionMillis(void);
 	uint32_t lengthMillis(void);
 
@@ -51,7 +54,8 @@ class StevesAwesomeSamplePlayer : public AudioStream {
     volatile float sampleSpeed;
     const unsigned int* sampleArray;
     volatile double length;
-    volatile double currentSample;
+    volatile double currentSampleIndex;
+    volatile double nextSampleIndex;
     bool playing;
     int format;
     int stepsPerSample;
