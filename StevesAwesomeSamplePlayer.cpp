@@ -170,12 +170,30 @@ void StevesAwesomeSamplePlayer::loadFromSD(const char* _fileName)
     unsigned long bytesRead = 0;
     unsigned long size = file.size(); // size in bytes
 
-  // set the length in actual samples
-    length = size / 2;
+  // set the length in actual samples, the modulo is to round up, if size is odd
+    length = size / 2 + ((long)size % 2);
 
     // figure out array length and create the array
-    int arrayLength = size / 2 + 1;  // 4 bytes per int, plus 1 for the header
-    unsigned int* sdSampleArray = new unsigned int[arrayLength];
+   int arrayLength = length / 2 + 1 + ((long)length % 2);  // 4 bytes per int, plus 1 for the header, plus 1 if length is an odd number
+
+    unsigned int* sdSampleArray;
+
+    if(usingExternalRAMChip){
+        if(sampleArray != nullptr) extmem_free(sampleArray);
+        sdSampleArray = (unsigned int*)extmem_malloc(arrayLength * sizeof(int));
+    } else {
+        if(sampleArray != nullptr) free(sampleArray);
+        sdSampleArray = (unsigned int*)malloc(arrayLength * sizeof(int));
+    } 
+
+    Serial.print("size: ");
+    Serial.println(size);
+    Serial.print("length: ");
+    Serial.println(length);    
+    Serial.print("arrayLength: ");
+    Serial.println(arrayLength);    
+    Serial.print("arrayLength * sizeof(int): ");
+    Serial.println(arrayLength * sizeof(int));
 
     // the size the header wants seems to be samples, not bytes, so its bytes / 2
     sdSampleArray[0] = size / 2 + (0x81 << 24);
@@ -198,6 +216,7 @@ void StevesAwesomeSamplePlayer::loadFromSD(const char* _fileName)
         bytesRead++;    
 
     }    
+
     setSampleArray(sdSampleArray);
 }
 
@@ -218,4 +237,8 @@ uint32_t StevesAwesomeSamplePlayer::lengthMillis(void)
 
 uint32_t StevesAwesomeSamplePlayer::positionMillis(void) {
     return (uint32_t)(currentSample  / (float)44100 * 1000.0);
+}
+
+void StevesAwesomeSamplePlayer::useExternalRAMChip() {
+    usingExternalRAMChip = true;
 }

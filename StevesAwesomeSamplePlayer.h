@@ -34,6 +34,7 @@ class StevesAwesomeSamplePlayer : public AudioStream {
     void setSampleArray(unsigned int* _sampleArray);
     void startPlaying();
     void loadFromSD(const char* _fileName);
+    void useExternalRAMChip();
     void play(const unsigned int* _sampleArray);
     void play(unsigned int* _sampleArray);
     void play();
@@ -55,6 +56,7 @@ class StevesAwesomeSamplePlayer : public AudioStream {
     volatile double currentSample;
     bool playing;
     int format;
+    bool usingExternalRAMChip = false;
     int stepsPerSample;
     int currentStep;
     audio_block_t* block;
