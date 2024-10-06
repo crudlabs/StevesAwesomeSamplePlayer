@@ -1,16 +1,16 @@
 /*
 
-This program takes a large RAW sound file (a little under 8MB, around
+This program takes a large .raw sound file (a little under 8MB, around
 90 seconds) from an SD card and loads it onto an external RAM
 chip soldered onto the Teensy. This sample can be played and
 manipluated like any other sample, just call the useExternalRAMChip()
 function before you load the first sample in.
 
-The Teensy does not come with this externam RAM chip! You have to
+The Teensy does not come with this external RAM chip! You have to
 buy one and solder it on yourself (though I may have a few):
 https://www.pjrc.com/store/psram.html
 
-This program plays a RAW file stored on an SD card, which is plugged
+This program plays a .raw file stored on an SD card, which is plugged
 into the audio adapter's SD card slot. The file - "coconutwater.raw" -
 is included in the same directory as this example sketch.
 
@@ -19,7 +19,7 @@ Definitely read all these notes before trying to use this:
 -You have to put the SD card into the audio adapter's SD card slot,
 not the Teensy 4.1s
 -It currently only plays 16 bit PCM encoded RAW files
--To make a 16 bit PCM encoded RAW file, drag any mono audio file into
+-To make a 16 bit PCM encoded .raw file, drag any mono audio file into
 Audacity and File > Export > Export Audio, and select...
 File Type: Other uncompressed files
 Header: RAW (header-less)

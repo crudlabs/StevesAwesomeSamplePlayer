@@ -1,5 +1,5 @@
 /*
-This program plays a RAW file stored on an SD card, which is plugged
+This program plays a .raw file stored on an SD card, which is plugged
 into the audio adapter's SD card slot. The file - "cowbell.raw" -
 is included in the same directory as this example sketch
 
@@ -7,8 +7,8 @@ Definitely read all these notes before trying to use this:
 
 -You have to put the SD card into the audio adapter's SD card slot,
 not the Teensy 4.1s
--It currently only plays 16 bit PCM encoded RAW files
--To make a 16 bit PCM encoded RAW file, drag any mono audio file into
+-It currently only plays 16 bit PCM encoded .raw files
+-To make a 16 bit PCM encoded .raw file, drag any mono audio file into
 Audacity and File > Export > Export Audio, and select...
 File Type: Other uncompressed files
 Header: RAW (header-less)
