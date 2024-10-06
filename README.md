@@ -48,3 +48,11 @@ to load the file cowbell.raw from the SD card (this 808 cowbell sample is includ
 ```
 to play it, after you've loaded it.
 
+**External RAM chip support**
+
+This library supports use of these [8MB PSRAM chips](https://www.pjrc.com/store/psram.html). The **sd_to_external_ram_chip** example file shows how to load a .raw file from an SD card onto one. Simply call
+```
+  samplePlayer.useExternalRAMChip();
+```
+before the first time you loadFromSD.
+
