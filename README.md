@@ -1,14 +1,16 @@
+<br/><br/>
 A sample playback object for the Teensy Audio Library based on the built-in AudioPlayMemory, but with some added features:
 
-1) A musically useful pitch shifting function which works with semitones on the chromatic scale. 
-2) Easy looping simply by setting the public **looping** variable true.
-3) Playing back any segment of the sample.
+1) A musically useful pitch shifting function which works with semitones on the chromatic scale
+2) Easy looping simply by setting the public **looping** variable true
+3) Playing back any segment of the sample
 4) Playback of .raw audio files from SD card
+5) Loading .raw files from an SD card onto an external PSRAM chip for up to 8 megabytes of samples
 
+Like AudioPlayMemory, this object currently supports sample array files created with [wav2sketch](http://crudlabs.org/wav2sketch/).
 
-Like AudioPlayMemory, this object currently only supports sample arrays created with [wav2sketch](http://crudlabs.org/wav2sketch/).
+<br/><br/>
 
-The **basic_playback** example in the examples folder shows the correct way to use all the features.
 **Pitch shifting**
 
 ```samplePlayer.pitchShift(-12);``` to pitch the sample down one octave.
@@ -19,9 +21,13 @@ The **basic_playback** example in the examples folder shows the correct way to u
 
 The argument for pitchShift() is a float, not an int, so you can tune to a fraction of a cent if you'd like.
 
+<br/><br/>
+
 **Looping**
 
 ```samplePlayer.looping = true;``` to loop the sample, until you tell it to stop.
+
+<br/><br/>
 
 **Partial sample playback**
 ```
@@ -30,11 +36,15 @@ The argument for pitchShift() is a float, not an int, so you can tune to a fract
 ```
 to start 25% of the way in and stop at 75%.
 
+<br/><br/>
+
 **Backwards playback**
 ```
   samplePlayer.backwards = true;
 ```
 to make the sample play backwards.
+
+<br/><br/>
 
 **SD Card playback**
 
@@ -48,7 +58,9 @@ to load the file cowbell.raw from the SD card (this 808 cowbell sample is includ
 ```
 to play it, after you've loaded it.
 
-**External RAM chip support**
+<br/><br/>
+
+**External PSRAM chip support**
 
 This library supports use of these [8MB PSRAM chips](https://www.pjrc.com/store/psram.html). The **sd_to_external_ram_chip** example file shows how to load a .raw file from an SD card onto one. Simply call
 ```
