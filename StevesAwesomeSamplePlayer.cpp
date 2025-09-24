@@ -7,22 +7,79 @@ extern "C" {
     extern const int16_t ulaw_decode_table[256];
 };
 
-void StevesAwesomeSamplePlayer::update()
+void StevesAwesomeSamplePlayer::update(void)
 {    
-    if(!playing) return;
-    
-    block = allocate();
-    if (block == NULL) return;
-    if(format == 0) return;
+    if(playing) { 
+        playUpdate(); 
+    }
+    else if(recording) {
+        recordUpdate();
+    }
+}
+
+void StevesAwesomeSamplePlayer::playUpdate() {
+    audio_block_t* outputBlock;
+    outputBlock = allocate();
+    if (outputBlock == NULL) return;
+    if(format == 0) {
+        Serial.println("format is 0");
+        return;
+    }
 
     for (int i = 0; i < 128; i++)
     {
-        if(playing) block->data[i] = getNextSample();
-        else block->data[i] = 0;
+        if(playing) outputBlock->data[i] = getNextSample();
+        else outputBlock->data[i] = 0;
     }
 
-  transmit(block, 0);
-  release(block);
+    transmit(outputBlock, 0);
+    release(outputBlock);    
+}
+
+void StevesAwesomeSamplePlayer::recordUpdate() {
+    audio_block_t* b;
+	b = receiveReadOnly(0);
+    if(b == NULL) {
+        release(b);
+        return;
+    }
+
+    // if it's not recording we still have to release the memory    
+    if(!recording) {
+        release(b);
+        return;
+    }
+    
+    for(int i=0; i<128; i++)
+    {
+
+        // if we've run out of room, stop and release the memory
+
+        Serial.print("length: ");
+        Serial.println(length);
+        Serial.print("maxSampleLength: ");
+        Serial.println(maxSampleLength);
+
+        if(length >= maxSampleLength/2) {
+            Serial.println("out of room");
+            release(b);
+            return;
+        }
+
+        //!!! i need to be using something other than length for this... length is the total number of samples whioch doesn't work here since its two unsigned int samples per array element, everything works but fix this later
+        // add to the sample array
+        if(i % 2 == 0) {
+            sampleArray[(int)length] = b->data[i];
+        } else {
+            sampleArray[(int)length] += b->data[i] << 16;
+            length++;     // update the length of the sample
+        }
+
+        // Serial.print("data: ");
+        // Serial.println(b->data[i]);
+    }
+
+    release(b);
 }
 
 void StevesAwesomeSamplePlayer::play(const unsigned int* _sampleArray) {
@@ -241,4 +298,22 @@ uint32_t StevesAwesomeSamplePlayer::positionMillis(void) {
 
 void StevesAwesomeSamplePlayer::useExternalRAMChip() {
     usingExternalRAMChip = true;
+}
+
+void StevesAwesomeSamplePlayer::startRecording() {
+    format = 0x81; // 16 bit PCM, 44100 Hz
+    recording = true;
+    length = 0;
+    currentSample = 0;
+    currentStep = 0;
+    stepsPerSample = 1;
+}
+
+void StevesAwesomeSamplePlayer::stopRecording() {
+    recording = false;
+    length = length * 2; // this is too hacky, fix later
+}
+
+void StevesAwesomeSamplePlayer::setMaxSampleLength(double _length) {
+    maxSampleLength = _length;
 }

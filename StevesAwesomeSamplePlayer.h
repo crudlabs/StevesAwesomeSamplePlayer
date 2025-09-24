@@ -4,19 +4,12 @@
 #include "Arduino.h"
 #include "AudioStream.h"
 
-class StevesAwesomeSamplePlayer : public AudioStream {
+class StevesAwesomeSamplePlayer : public AudioStream 
+{      
 
-    private:
-    #if defined(__IMXRT1062__) || defined(__MK66FX1M0__) || defined(__MK64FX512__)
-        static const unsigned int MAX_BUFFERS = 80;
-    #else
-        static const unsigned int MAX_BUFFERS = 32;
-    #endif        
-
-    public:
+public:
     // constructor
-    // (note for later: in theory I shouldn't need the inputQueueArray and the args should be (0, NULL), but this works fine so I'm leaving it for now
-    StevesAwesomeSamplePlayer() : AudioStream(1, inputQueueArray) {
+    StevesAwesomeSamplePlayer(void) : AudioStream(1, inputQueueArray) {
           playing = false;
           currentSample = 0;
           startPercent = 0.0;
@@ -32,6 +25,7 @@ class StevesAwesomeSamplePlayer : public AudioStream {
     virtual void update(void);
 
     void setSampleArray(unsigned int* _sampleArray);
+    void setMaxSampleLength(double _length);
     void startPlaying();
     void loadFromSD(const char* _fileName);
     void useExternalRAMChip();
@@ -40,6 +34,8 @@ class StevesAwesomeSamplePlayer : public AudioStream {
     void play();
     void stop();
     void pitchShift(float _semitones);
+    void startRecording();
+    void stopRecording();
     volatile double startPercent;
     volatile double endPercent;
     bool isPlaying();
@@ -48,19 +44,22 @@ class StevesAwesomeSamplePlayer : public AudioStream {
     uint32_t positionMillis(void);
 	uint32_t lengthMillis(void);
 
-    private:
+private:
+    audio_block_t* inputQueueArray[1];
+    void playUpdate();
+    void recordUpdate();
     int16_t getNextSample();    
     volatile float sampleSpeed;
     unsigned int* sampleArray;
     volatile double length;
+    volatile double maxSampleLength;
     volatile double currentSample;
-    bool playing;
+    volatile bool playing;
+    volatile bool recording;
     int format;
     bool usingExternalRAMChip = false;
     int stepsPerSample;
     int currentStep;
-    audio_block_t* block;
-    audio_block_t* inputQueueArray[1];
 };
 
 #endif
