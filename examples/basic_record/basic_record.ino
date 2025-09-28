@@ -1,7 +1,7 @@
 /*
 this sketch allows the user to record a sample from the Teensy audio adapter's microphone 
 input and play it back. the sample length is limited by the length of the sampleArray. It
-is currently set to record one second at the default sample rate of 44100 samples per second.
+is currently set to record five seconds at the default sample rate of 44100 samples per second.
 you can increase the size of the array for longer samples, though you're of course limited
 by the Teensy's memory
 */
@@ -24,8 +24,15 @@ AudioConnection patchCord3(samplePlayer, 0, i2s2, 1);
 AudioControlSGTL5000 sgtl5000_1;  //xy=351.4500198364258,269.7000198364258
 // GUItool: end automatically generated code
 
-#define MAX_SAMPLES 88200
+// it records at 44100 samples per second, so this allows up to 5 seconds of recording.
+// if you increase this number eventually the entire program will crash since there
+// isn't that much memory available
+#define MAX_SAMPLES 220500
+
+// the samples are 16 bits, and are held in an array of 32 bit ints. each 32 bit int
+// holds two samples. so the array length is half the total number of samples
 #define SAMPLE_ARRAY_LENGTH (MAX_SAMPLES / 2)
+
 unsigned int sampleArray[SAMPLE_ARRAY_LENGTH];
 
 int recordButtonPin = 33;
@@ -41,9 +48,14 @@ void setup() {
   // audio memory
   AudioMemory(12);
 
+  // init sample array
   samplePlayer.setMaxSampleLength(MAX_SAMPLES);
   samplePlayer.setSampleArray(sampleArray);
 
+  // loop sample playback
+  samplePlayer.looping = true;
+
+  // pinModes
   pinMode(recordButtonPin, INPUT);
   pinMode(playButtonPin, INPUT);
   pinMode(recordLedPin, OUTPUT);

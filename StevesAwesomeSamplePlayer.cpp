@@ -21,10 +21,6 @@ void StevesAwesomeSamplePlayer::playUpdate() {
     audio_block_t* outputBlock;
     outputBlock = allocate();
     if (outputBlock == NULL) return;
-    if(format == 0) {
-        Serial.println("format is 0");
-        return;
-    }
 
     for (int i = 0; i < 128; i++)
     {
@@ -60,23 +56,21 @@ void StevesAwesomeSamplePlayer::recordUpdate() {
         Serial.print("maxSampleLength: ");
         Serial.println(maxSampleLength);
 
-        if(length >= maxSampleLength/2) {
-            Serial.println("out of room");
+        if(recordingArrayIndex >= maxSampleLength/2) {
             release(b);
             return;
         }
 
         //!!! i need to be using something other than length for this... length is the total number of samples whioch doesn't work here since its two unsigned int samples per array element, everything works but fix this later
+
         // add to the sample array
         if(i % 2 == 0) {
-            sampleArray[(int)length] = b->data[i];
+            sampleArray[(int)recordingArrayIndex] = b->data[i];
         } else {
-            sampleArray[(int)length] += b->data[i] << 16;
-            length++;     // update the length of the sample
+            sampleArray[(int)recordingArrayIndex] += b->data[i] << 16;
+            recordingArrayIndex++;     // update the length of the sample
         }
-
-        // Serial.print("data: ");
-        // Serial.println(b->data[i]);
+        length++;
     }
 
     release(b);
@@ -100,7 +94,8 @@ void StevesAwesomeSamplePlayer::play() {
 
 int16_t StevesAwesomeSamplePlayer::getNextSample()
 {
-    int16_t cs = 0;
+    // create a 16 bit int to hold the current sample
+    int16_t cs = 0; 
 
     __disable_irq();
 
@@ -120,8 +115,6 @@ int16_t StevesAwesomeSamplePlayer::getNextSample()
             currentSample += sampleSpeed;
         }
     }
-
-
         
     // if forwards
     if(backwards == false and currentSample >= length * endPercent) {
@@ -157,10 +150,17 @@ int16_t StevesAwesomeSamplePlayer::getNextSample()
     // if it's 16 bit PCB
     if(format == 0x81 or format == 0x82 or format == 0x83) {
 
-        sampleIndex = currentSample / 2;    // two samples per int
-        sample32BitContainer = sampleArray[(int)sampleIndex];
+        // there two 16 bit samples per 32 bit int, so this index is where the sample actually is in the array
+        sampleIndex = currentSample / 2;    
 
-        if((int)currentSample % 2 == 0) cs = (int16_t)(sample32BitContainer & 65535);
+        // sampleArray[0] is the format and length info, so skip that and go to sampleArray[1]
+        if(sampleIndex == 0) sampleIndex = 1;
+
+        // get the whole 32 bit int, so we can get the 16 bits we need in the next step
+        sample32BitContainer = sampleArray[(int)sampleIndex];  
+
+        // // if its an even number sample, the sample is the first 16 bits of the int. if its an odd number sample, the sample is the second 16 bits of the int
+        if((int)currentSample % 2 == 0) cs = (int16_t)(sample32BitContainer & 65535); 
         else cs = (int16_t)(sample32BitContainer >> 16);
     }
     // if its u-law
@@ -168,7 +168,7 @@ int16_t StevesAwesomeSamplePlayer::getNextSample()
         sampleIndex = currentSample / 4;    // 4 samples per int
         sample32BitContainer = sampleArray[(int)sampleIndex];
         cs = (int16_t)((sample32BitContainer >> (((int)currentSample % 4) * 8)) & 255);   // get the 8 bit sample
-        cs = ulaw_decode_table[(int)cs];                                            // decode
+        cs = ulaw_decode_table[(int)cs];                                                  // decode
     }
 
     __enable_irq();
@@ -180,8 +180,8 @@ void StevesAwesomeSamplePlayer::setSampleArray(unsigned int* _sampleArray)
 {
     __disable_irq();
     sampleArray = _sampleArray;
-    length = *_sampleArray & 0xFFFFFF;
-    format = *_sampleArray  >> 24;
+    length = *_sampleArray & 0xFFFFFF;              // the first 3 bytes are the total number of samples (NOT the array length)
+    format = *_sampleArray >> 24;                   // the fourth byte is the file format
     if(format == 0x81)      stepsPerSample = 1;     // 16 bit PCM, 44100 Hz
     else if(format == 0x82) stepsPerSample = 2;     // 16 bit PCM, 22050 Hz
     else if(format == 0x83) stepsPerSample = 4;     // 16 bit PCM, 11025 Hz
@@ -289,6 +289,7 @@ void StevesAwesomeSamplePlayer::pitchShift(float _semitones)
 
 uint32_t StevesAwesomeSamplePlayer::lengthMillis(void)
 {
+    // this currently only works with recordings with a sample rate of 44100, add the others later
     return (uint32_t)(length  / (float)44100 * 1000.0);
 }
 
@@ -301,17 +302,17 @@ void StevesAwesomeSamplePlayer::useExternalRAMChip() {
 }
 
 void StevesAwesomeSamplePlayer::startRecording() {
-    format = 0x81; // 16 bit PCM, 44100 Hz
+    format = 0x81; // we're currently just doing 16 bit PCM
     recording = true;
     length = 0;
     currentSample = 0;
     currentStep = 0;
     stepsPerSample = 1;
+    recordingArrayIndex = 0;
 }
 
 void StevesAwesomeSamplePlayer::stopRecording() {
     recording = false;
-    length = length * 2; // this is too hacky, fix later
 }
 
 void StevesAwesomeSamplePlayer::setMaxSampleLength(double _length) {

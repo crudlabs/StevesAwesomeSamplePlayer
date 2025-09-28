@@ -60,6 +60,7 @@ private:
     bool usingExternalRAMChip = false;
     int stepsPerSample;
     int currentStep;
+    int recordingArrayIndex;
 };
 
 #endif
