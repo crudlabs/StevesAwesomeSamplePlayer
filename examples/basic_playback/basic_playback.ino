@@ -22,6 +22,8 @@ void setup() {
   // audio memory
   AudioMemory(12);
 
+  // this is a random comment
+
   // init audio shield
   sgtl5000_1.enable();
   sgtl5000_1.volume(0.8);
